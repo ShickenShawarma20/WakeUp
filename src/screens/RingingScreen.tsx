@@ -4,6 +4,8 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import '@tensorflow/tfjs';
 import { useTheme } from '../theme/ThemeContext';
 import { typography } from '../theme/typography';
+import { spacing } from '../theme/spacing';
+import { AtmosphericBackground } from '../components/AtmosphericBackground';
 
 interface RingingScreenProps {
   alarmLabel: string;
@@ -33,8 +35,6 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const beepIntervalRef = useRef<number | null>(null);
-
   // Update clock
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -45,16 +45,18 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
   useEffect(() => {
     let isMounted = true;
 
-    cocoSsd.load().then(loadedModel => {
-      if (isMounted) {
-        setModel(loadedModel);
-        setStatus("Point camera at the object and snap.");
-      }
-    }).catch(err => {
-      console.error(err);
-      if (isMounted) setStatus("Error loading AI. You can dismiss.");
-      setCanDismiss(true);
-    });
+    setTimeout(() => {
+      cocoSsd.load().then(loadedModel => {
+        if (isMounted) {
+          setModel(loadedModel);
+          setStatus("POINT SENSOR AT OBJECT");
+        }
+      }).catch(err => {
+        console.error(err);
+        if (isMounted) setStatus("AI MODEL FAILED. YOU CAN DISMISS.");
+        setCanDismiss(true);
+      });
+    }, 1000);
 
     try {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -68,10 +70,14 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
       oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
 
-      beepIntervalRef.current = window.setInterval(() => {
-        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime + 0.2);
-      }, 500);
+      // Pre-schedule 10 minutes of beeping directly onto the audio hardware thread.
+      // This guarantees the alarm never stutters even if TFJS completely blocks the main JS thread.
+      const now = audioCtx.currentTime;
+      for (let i = 0; i < 1200; i++) {
+        const time = now + (i * 0.5);
+        gainNode.gain.setValueAtTime(1, time);
+        gainNode.gain.setValueAtTime(0, time + 0.2);
+      }
 
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
@@ -89,12 +95,11 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
   }, []);
 
   const stopSound = () => {
-    if (beepIntervalRef.current) clearInterval(beepIntervalRef.current);
     if (oscillatorRef.current) {
       try { oscillatorRef.current.stop(); oscillatorRef.current.disconnect(); } catch (e) { }
     }
     if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-      audioCtxRef.current.close();
+      audioCtxRef.current.close().catch(() => {});
     }
   };
 
@@ -106,29 +111,37 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
   };
 
   const openCamera = async () => {
+    // Resume audio context immediately without awaiting so it doesn't block
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
+      audioCtxRef.current.resume().catch(() => {});
     }
 
     setIsCameraActive(true);
-    setStatus("Starting camera...");
+    setStatus("INITIALIZING CAMERA...");
 
+    // Offload media constraints explicitly to minimize delays
     try {
-      let stream: MediaStream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 } }
+      });
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setStatus(model ? "Point camera at the object and snap." : "Loading AI Model...");
+        setStatus(model ? "POINT SENSOR AT OBJECT" : "LOADING AI MODEL...");
       }
     } catch (err) {
-      setStatus("Camera access denied.");
-      setIsCameraActive(false);
-      setCanDismiss(true);
+      try {
+        // Fallback for devices that don't support explicit facingMode
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = fallbackStream;
+          setStatus(model ? "POINT SENSOR AT OBJECT" : "LOADING AI MODEL...");
+        }
+      } catch (fallbackErr) {
+        setStatus("CAMERA ACCESS ERROR");
+        setIsCameraActive(false);
+        setCanDismiss(true);
+      }
     }
   };
 
@@ -168,190 +181,117 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
     onDismiss();
   };
 
-  const pulseAnimation = {
-    scale: [1, 1.03, 1],
-    opacity: [1, 0.85, 1],
-    transition: { duration: 1.5, repeat: Infinity }
-  };
+  const dispHours  = currentTime.getHours() % 12 || 12;
+  const dispMinutes = currentTime.getMinutes().toString().padStart(2, '0');
+  const dispAmPm   = currentTime.getHours() >= 12 ? 'PM' : 'AM';
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: `linear-gradient(180deg, ${colors.backgroundElevated} 0%, ${colors.backgroundDeep} 100%)`,
+    <AtmosphericBackground style={{
+      position: 'fixed', inset: 0,
       zIndex: 9999,
-      display: 'flex',
-      flexDirection: 'column',
+      display: 'flex', flexDirection: 'column',
       alignItems: 'center',
-      padding: '40px 20px',
+      padding: '48px 24px 32px',
       overflowY: 'auto',
     }}>
-      {/* Purple glow */}
-      <div style={{
-        position: 'absolute',
-        top: '-60px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '300px',
-        height: '300px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(224, 64, 251, 0.2) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Time */}
-      <motion.h2
-        animate={pulseAnimation}
-        style={{
-          ...typography.alarmTime,
-          color: colors.accentMagenta,
-          margin: '20px 0 10px',
-          textShadow: '0 4px 24px rgba(224, 64, 251, 0.4)',
-          zIndex: 1,
-        }}
-      >
-        {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </motion.h2>
-
-      <p style={{ ...typography.cardTitle, color: colors.textPrimary, marginBottom: '32px', zIndex: 1 }}>
-        {alarmLabel || "Wake Up!"}
-      </p>
-
-      {/* Target object card */}
-      <div style={{
-        background: colors.cardDark,
-        border: `2px dashed ${colors.accentMagenta}40`,
-        borderRadius: '20px',
-        padding: '20px',
-        width: '100%',
-        maxWidth: '350px',
-        textAlign: 'center',
-        marginBottom: '20px',
-        zIndex: 1,
-      }}>
-        <p style={{ ...typography.bodyText, color: colors.textSecondary, margin: '0 0 8px' }}>
-          To dismiss, take a photo of:
-        </p>
-        <h3 style={{
-          ...typography.heroTitle,
-          color: colors.accentMagenta,
-          textTransform: 'capitalize' as const,
-          margin: 0,
-        }}>
-          {targetObject}
-        </h3>
-      </div>
-
-      {!isCameraActive ? (
-        <button
-          onClick={openCamera}
-          style={{
-            width: '100%',
-            maxWidth: '350px',
-            padding: '18px',
-            borderRadius: '20px',
-            border: 'none',
-            background: 'linear-gradient(135deg, #B040E0, #E040FB)',
-            color: '#FFF',
-            ...typography.cardTitle,
-            fontSize: '18px',
-            cursor: 'pointer',
-            boxShadow: '0 8px 32px rgba(224, 64, 251, 0.35)',
-            zIndex: 1,
-          }}
+        <motion.div
+          animate={{ scale: [1, 1.02, 1], opacity: [1, 0.88, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '32px 0 16px' }}
         >
-          Open Camera
-        </button>
-      ) : (
+          <span style={{ ...typography.displayLg, color: colors.textPrimary, textShadow: `0 0 40px ${colors.ambientGlow}80` }}>
+            {dispHours}:{dispMinutes}
+          </span>
+          <span style={{ ...typography.labelMd, color: colors.accentPrimary }}>
+            {dispAmPm}
+          </span>
+        </motion.div>
+
+        <p style={{ ...typography.headlineMd, color: colors.textPrimary, marginBottom: `${spacing.sp8}px`, textAlign: 'center' }}>
+          {alarmLabel || "Wake Up"}
+        </p>
+
+        {/* ── Target Object Panel ─────────────────────── */}
         <div style={{
-          width: '100%',
-          maxWidth: '350px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          alignItems: 'center',
-          zIndex: 1,
+          width: '100%', maxWidth: '340px',
+          background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: '24px', padding: '24px', textAlign: 'center', marginBottom: 'auto',
+          boxShadow: `inset 0 1px 0 ${colors.glassHighlight}`,
         }}>
-          <div style={{
-            width: '100%',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            backgroundColor: '#000',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-            border: `2px solid ${colors.cardDarkBorder}`,
-            position: 'relative',
-            minHeight: '200px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            {!cameraReady && (
-              <p style={{ color: colors.textMuted, position: 'absolute', fontSize: '14px' }}>
-                📷 Initializing camera...
-              </p>
-            )}
-            <video
-              ref={videoRef}
-              playsInline
-              autoPlay
-              muted
-              onLoadedMetadata={() => setCameraReady(true)}
-              style={{
-                width: '100%',
-                display: 'block',
-                opacity: cameraReady ? 1 : 0,
-                transition: 'opacity 0.3s',
-              }}
-            />
-          </div>
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
-
-          <p style={{
-            ...typography.labelText,
-            color: canDismiss ? colors.success : colors.textPrimary,
-            minHeight: '40px',
-            textAlign: 'center',
-          }}>
-            {status}
+          <p style={{ ...typography.labelMd, color: colors.textMuted, marginBottom: '12px' }}>
+            TO DISMISS, CAPTURE:
           </p>
+          <h3 style={{ ...typography.headlineMd, color: colors.accentPrimary, margin: 0, textTransform: 'capitalize' }}>
+            {targetObject}
+          </h3>
+        </div>
 
-          {!canDismiss ? (
-            <button
-              onClick={handleSnapAndVerify}
+        {/* ── Camera / Actions ────────────────────────── */}
+        <div style={{ width: '100%', maxWidth: '340px', marginTop: '24px' }}>
+          {!isCameraActive ? (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={openCamera}
               style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '20px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #B040E0, #E040FB)',
-                color: '#FFF',
-                ...typography.badgeText,
-                fontSize: '16px',
-                cursor: 'pointer',
+                width: '100%', padding: '20px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                background: `linear-gradient(135deg, ${colors.accentPrimary}, ${colors.accentPrimaryDim})`,
+                boxShadow: `0 0 32px ${colors.ambientGlow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                color: colors.onPrimary, ...typography.buttonLg,
               }}
             >
-              Snap & Verify
-            </button>
+              Open Camera
+            </motion.button>
           ) : (
-            <button
-              onClick={handleDismiss}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '20px',
-                border: 'none',
-                background: colors.success,
-                color: '#FFF',
-                ...typography.cardTitle,
-                fontSize: '18px',
-                cursor: 'pointer',
-                boxShadow: `0 8px 32px rgba(46, 213, 115, 0.3)`,
-              }}
-            >
-              Dismiss Alarm
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{
+                width: '100%', borderRadius: '24px', overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.5)',
+                boxShadow: `inset 0 1px 0 ${colors.glassHighlight}`, position: 'relative', minHeight: '220px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                {!cameraReady && (
+                  <p style={{ ...typography.labelMd, color: colors.textMuted, position: 'absolute' }}>
+                    INITIALIZING SENSOR...
+                  </p>
+                )}
+                <video
+                  ref={videoRef} playsInline autoPlay muted onLoadedMetadata={() => setCameraReady(true)}
+                  style={{ width: '100%', display: 'block', opacity: cameraReady ? 1 : 0, transition: 'opacity 0.4s ease' }}
+                />
+              </div>
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+              <p style={{ ...typography.labelMd, color: canDismiss ? colors.success : colors.textPrimary, minHeight: '20px', textAlign: 'center' }}>
+                {status.toUpperCase()}
+              </p>
+
+              {!canDismiss ? (
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleSnapAndVerify}
+                  style={{
+                    width: '100%', padding: '16px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(16px)',
+                    boxShadow: `inset 0 1px 0 ${colors.glassHighlight}`, color: colors.textPrimary, ...typography.buttonLg,
+                  }}
+                >
+                  Verify Environment
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDismiss}
+                  style={{
+                    width: '100%', padding: '20px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                    background: colors.success, color: '#FFF', ...typography.buttonLg,
+                    boxShadow: '0 0 24px rgba(46, 213, 115, 0.4)',
+                  }}
+                >
+                  Silence Alarm
+                </motion.button>
+              )}
+            </div>
           )}
         </div>
-      )}
-    </div>
+    </AtmosphericBackground>
   );
 };

@@ -1,21 +1,66 @@
-* {
+/* ============================================================
+   Ethereal Horizon — Global Styles
+   "The Temporal Prism" Design System
+   ============================================================ */
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 html, body {
-  background-color: #0D0B1A;
-  color: #F0E6FF;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  background-color: #020617; /* Night deep — overridden dynamically by ThemeContext */
+  color: #e0e7ff;
+  font-family: 'Manrope', 'Space Grotesk', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  height: 100%;
 }
 
-/* Scrollbar styling */
+#root {
+  height: 100%;
+}
+
+/* ── Atmospheric background gradient animation ─────────────── */
+@keyframes atmosphericPulse {
+  0%   { opacity: 0.7; transform: scale(1);   }
+  50%  { opacity: 1;   transform: scale(1.08); }
+  100% { opacity: 0.7; transform: scale(1);   }
+}
+
+@keyframes floatOrb {
+  0%   { transform: translate(-50%, -50%) scale(1);    }
+  33%  { transform: translate(-48%, -54%) scale(1.05); }
+  66%  { transform: translate(-52%, -47%) scale(0.97); }
+  100% { transform: translate(-50%, -50%) scale(1);    }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center;  }
+}
+
+/* ── Motion blur for time digit transitions ────────────────── */
+.digit-blur-enter {
+  filter: blur(4px);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: all 0.25s ease;
+}
+
+.digit-blur-enter-active {
+  filter: blur(0);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Scrollbar styling ─────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 ::-webkit-scrollbar-track {
@@ -23,35 +68,66 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(180, 120, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(180, 120, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Selection */
+/* ── Selection ─────────────────────────────────────────────── */
 ::selection {
-  background: rgba(224, 64, 251, 0.3);
-  color: #F0E6FF;
+  background: rgba(129, 140, 248, 0.3);
+  color: #e0e7ff;
 }
 
-/* Remove default button/input outline */
+/* ── Focus rings ───────────────────────────────────────────── */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid rgba(224, 64, 251, 0.5);
+  outline: 2px solid rgba(129, 140, 248, 0.6);
   outline-offset: 2px;
 }
 
-/* Smooth transitions */
+/* ── Tap highlight removal ─────────────────────────────────── */
 a, button {
+  -webkit-tap-highlight-color: transparent;
   transition: all 0.2s ease;
 }
 
-/* Option styling for selects */
+/* ── Select / Option defaults ──────────────────────────────── */
 option {
-  background: #1A1030;
-  color: #F0E6FF;
+  background: #1e1b4b;
+  color: #e0e7ff;
+}
+
+/* ── Glass surface input reset ─────────────────────────────── */
+input, select, textarea {
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* ── Atmospheric orbs ──────────────────────────────────────── */
+.atm-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: floatOrb 12s ease-in-out infinite;
+}
+
+.atm-orb-pulse {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: atmosphericPulse 6s ease-in-out infinite;
+}
+
+/* ── Container prevent horizontal overflow ─────────────────── */
+.screen-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
 }

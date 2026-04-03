@@ -23,80 +23,111 @@ interface AlarmCardProps {
 export const AlarmCard: React.FC<AlarmCardProps> = ({
   id, time, label, isEnabled, repeatDays, onToggle, onPress,
 }) => {
-  const { colors } = useTheme();
-
-  const formatTime = (h: number, m: number) => {
-    return `${h.toString().padStart(2, '0')}.${m.toString().padStart(2, '0')}`;
-  };
+  const { colors, glassStyles } = useTheme();
 
   const getDayLabel = (days: string[]) => {
-    if (days.length === 0) return 'Once';
-    if (days.length === 7) return 'Every day';
+    if (days.length === 0) return 'ONCE';
+    if (days.length === 7) return 'EVERY DAY';
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     const weekend = ['Sat', 'Sun'];
-    if (weekdays.every(d => days.includes(d)) && days.length === 5) return 'Every weekdays';
-    if (weekend.every(d => days.includes(d)) && days.length === 2) return 'Sat, Sun';
-    return days.join(', ');
+    if (weekdays.every(d => days.includes(d)) && days.length === 5) return 'WEEKDAYS';
+    if (weekend.every(d => days.includes(d)) && days.length === 2) return 'WEEKENDS';
+    return days.join(' · ');
   };
 
   return (
     <motion.div
       onClick={() => onPress(id)}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       style={{
-        background: colors.cardDark,
-        border: `1px solid ${colors.cardDarkBorder}`,
-        borderRadius: '20px',
+        // Level 2 Glass Card — No outer border, inner glow only
+        ...glassStyles.standard,
         padding: '20px 24px',
         cursor: 'pointer',
-        opacity: isEnabled ? 1 : 0.55,
-        transition: 'opacity 0.3s ease, box-shadow 0.3s ease',
-        boxShadow: isEnabled ? '0 4px 24px rgba(224, 64, 251, 0.08)' : '0 2px 12px rgba(0,0,0,0.2)',
+        opacity: isEnabled ? 1 : 0.45,
+        // Ambient glow when active — tinted, never pure black
+        boxShadow: isEnabled
+          ? `inset 0 1px 0 ${colors.glassHighlight}, 0 0 2rem ${colors.ambientGlow}`
+          : `inset 0 1px 0 ${colors.glassHighlight}`,
+        transition: 'opacity 0.3s ease, box-shadow 0.4s ease',
         position: 'relative',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {/* Left: Time & Details */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      {/* Enabled indicator — subtle accent top-left line */}
+      {isEnabled && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 24, right: 24, height: '2px',
+          borderRadius: '0 0 2px 2px',
+          background: `linear-gradient(90deg, ${colors.accentPrimary}, ${colors.accentPrimaryDim})`,
+          opacity: 0.8,
+        }} />
+      )}
+
+      {/* Asymmetric layout: Time left-dominant, details to the right */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+
+        {/* Left: Oversized time + technical label */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+          {/* Time in headlineSm with ampm in labelMd */}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontWeight: 700,
+              fontSize: '2.5rem',
+              lineHeight: 1,
+              letterSpacing: '-0.02em',
+              color: colors.textPrimary,
+            }}>
+              {time.hours}:{time.minutes.toString().padStart(2, '0')}
+            </span>
+            <span style={{
+              ...typography.labelMd,
+              color: isEnabled ? colors.accentPrimary : colors.textMuted,
+              lineHeight: 1,
+            }}>
+              {time.ampm}
+            </span>
+          </div>
+
+          {/* Label + Repeat — Technical label style */}
           <span style={{
-            ...typography.alarmTimeSmall,
-            color: colors.textPrimary,
-            lineHeight: 1,
+            ...typography.labelMd,
+            color: isEnabled ? colors.textSecondary : colors.textMuted,
+            letterSpacing: '0.06em',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}>
-            {formatTime(time.hours, time.minutes)}
-          </span>
-          <span style={{
-            ...typography.labelText,
-            color: isEnabled ? colors.accentMagenta : colors.textMuted,
-            letterSpacing: '0.02em',
-          }}>
-            {label && `${label} • `}{getDayLabel(repeatDays)}
+            {label ? `${label.toUpperCase()} · ` : ''}{getDayLabel(repeatDays)}
           </span>
         </div>
 
-        {/* Right: Toggle + Menu */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Toggle */}
+        {/* Right: Toggle + menu */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+
+          {/* Toggle — recessed container */}
           <div
             onClick={(e) => {
               e.stopPropagation();
-              if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                navigator.vibrate(50);
-              }
+              if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(40);
               onToggle(id);
             }}
             style={{
+              // Recessed look for inner element
               width: '52px',
               height: '28px',
-              borderRadius: '14px',
+              borderRadius: '999px',
               position: 'relative',
               cursor: 'pointer',
-              background: isEnabled 
-                ? 'linear-gradient(135deg, #B040E0, #E040FB)' 
-                : colors.toggleInactive,
-              boxShadow: isEnabled ? '0 0 16px rgba(224, 64, 251, 0.3)' : 'none',
-              transition: 'all 0.3s ease',
+              background: isEnabled
+                ? `linear-gradient(135deg, ${colors.accentPrimary}, ${colors.accentPrimaryDim})`
+                : 'rgba(0,0,0,0.25)',
+              boxShadow: isEnabled
+                ? `0 0 20px ${colors.ambientGlow}, inset 0 1px 0 rgba(255,255,255,0.2)`
+                : 'inset 0 2px 4px rgba(0,0,0,0.3)',
+              transition: 'all 0.35s ease',
             }}
           >
             <motion.div
@@ -109,31 +140,23 @@ export const AlarmCard: React.FC<AlarmCardProps> = ({
                 height: '22px',
                 borderRadius: '50%',
                 backgroundColor: '#FFF',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                boxShadow: '0 1px 6px rgba(0,0,0,0.25)',
               }}
             />
           </div>
 
-          {/* Three dot menu */}
+          {/* Three-dot menu — using dots, no border */}
           <div
-            onClick={(e) => {
-              e.stopPropagation();
-              onPress(id);
-            }}
+            onClick={(e) => { e.stopPropagation(); onPress(id); }}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '3px',
-              padding: '4px',
-              cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', gap: '3.5px',
+              padding: '6px 4px', cursor: 'pointer', opacity: 0.5,
             }}
           >
             {[0, 1, 2].map(i => (
               <div key={i} style={{
-                width: '4px',
-                height: '4px',
-                borderRadius: '50%',
-                backgroundColor: colors.textMuted,
+                width: '3.5px', height: '3.5px', borderRadius: '50%',
+                backgroundColor: colors.textSecondary,
               }} />
             ))}
           </div>

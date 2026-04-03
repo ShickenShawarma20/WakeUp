@@ -5,14 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:android": "npx cap run android -l --external",
+    "watch:sync": "npx nodemon --watch src --ext ts,tsx,css,html --exec \"npm run build && npx cap sync android\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.3.0",
     "@capacitor/core": "^8.3.0",
+    "@capacitor/local-notifications": "^8.0.2",
     "@tensorflow-models/coco-ssd": "^2.2.3",
     "@tensorflow/tfjs": "^4.22.0",
     "framer-motion": "^12.38.0",

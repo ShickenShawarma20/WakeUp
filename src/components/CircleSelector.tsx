@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useTheme } from '../theme/ThemeContext';
 import { typography } from '../theme/typography';
 
@@ -8,39 +9,45 @@ interface CircleSelectorProps {
   onPress: () => void;
 }
 
+/**
+ * Selection Chip per Ethereal Horizon spec:
+ * - Inactive: surfaceVariant at 30% opacity, no border
+ * - Active: tertiaryContainer with glowing tertiary label
+ * - Full pill shape
+ */
 export const CircleSelector: React.FC<CircleSelectorProps> = ({ label, isSelected, onPress }) => {
   const { colors } = useTheme();
 
   return (
-    <button
+    <motion.button
       onClick={onPress}
+      whileTap={{ scale: 0.88 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       style={{
-        width: '44px',
-        height: '44px',
-        borderRadius: '50%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: '40px',
+        height: '40px',
+        borderRadius: '999px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer',
+        border: 'none',
+        outline: 'none',
         background: isSelected
-          ? 'linear-gradient(135deg, #B040E0, #E040FB)'
-          : 'rgba(100, 80, 140, 0.2)',
-        border: isSelected
-          ? 'none'
-          : `1px solid ${colors.cardDarkBorder}`,
+          ? colors.tertiaryContainer
+          : `${colors.surfaceVariant}`,
         boxShadow: isSelected
-          ? '0 0 16px rgba(224, 64, 251, 0.25)'
+          ? `0 0 16px ${colors.tertiary}40`
           : 'none',
-        transition: 'all 0.2s ease',
+        transition: 'background 0.25s ease, box-shadow 0.25s ease',
       }}
     >
       <span style={{
-        ...typography.labelText,
-        color: isSelected ? '#FFF' : colors.textMuted,
-        fontWeight: isSelected ? 600 : 500,
+        ...typography.labelMd,
+        color: isSelected ? colors.tertiary : colors.textMuted,
+        textShadow: isSelected ? `0 0 12px ${colors.tertiary}80` : 'none',
+        transition: 'color 0.25s ease, text-shadow 0.25s ease',
       }}>
         {label}
       </span>
-    </button>
+    </motion.button>
   );
 };

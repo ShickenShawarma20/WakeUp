@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../theme/ThemeContext';
 import { typography } from '../theme/typography';
 
 interface TimeDisplayProps {
@@ -7,27 +8,34 @@ interface TimeDisplayProps {
   ampm: string;
 }
 
+/**
+ * Hero clock display using displayLg (Space Grotesk 3.5rem).
+ * AM/PM in labelMd — ALL-CAPS, 5% tracking.
+ * High-contrast white with circadian-tinted text shadow.
+ */
 export const TimeDisplay: React.FC<TimeDisplayProps> = ({ hours, minutes, ampm }) => {
+  const { colors } = useTheme();
   const formattedMinutes = minutes.toString().padStart(2, '0');
 
   return (
-    <div
-      style={{
-        ...typography.alarmTime,
-        color: '#F0E6FF',
-        textShadow: '0px 4px 20px rgba(224, 64, 251, 0.2)',
-        display: 'flex',
-        alignItems: 'baseline',
-        gap: '6px',
-      }}
-    >
-      <span>
+    <div style={{
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '8px',
+    }}>
+      <span style={{
+        ...typography.displayLg,
+        color: colors.textPrimary,
+        textShadow: `0 4px 32px ${colors.ambientGlow}`,
+      }}>
         {hours}:{formattedMinutes}
       </span>
       <span style={{
-        fontSize: '0.35em',
-        fontWeight: 500,
-        color: 'rgba(240, 230, 255, 0.6)',
+        ...typography.labelMd,
+        color: colors.textSecondary,
+        lineHeight: 1,
+        alignSelf: 'flex-end',
+        marginBottom: '0.4rem',
       }}>
         {ampm}
       </span>

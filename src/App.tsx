@@ -5,7 +5,9 @@ import { AlarmDetailScreen } from './screens/AlarmDetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { RingingScreen } from './screens/RingingScreen';
 import { ThemeProvider, useTheme } from './theme/ThemeContext';
-
+import { requestNotificationPermissions, syncAlarmsToNotifications } from './utils/notifications';
+import { App as CapacitorApp } from '@capacitor/app';
+import NativeAlarm from './utils/nativeAlarm';
 type RouteName = 'AlarmList' | 'AlarmDetail' | 'Settings';
 
 function AppContent() {
@@ -34,7 +36,50 @@ function AppContent() {
 
   useEffect(() => {
     localStorage.setItem('wakeup-alarms', JSON.stringify(alarms));
+    syncAlarmsToNotifications(alarms);
   }, [alarms]);
+
+  // Request permissions and monitor Native Alarm trigger
+  useEffect(() => {
+    requestNotificationPermissions();
+
+    const checkForNativeAlarmTrigger = async () => {
+      try {
+        const result = await NativeAlarm.checkAlarm();
+        if (result.triggered) {
+          // Find the nearest scheduled alarm or just the first enabled one as fallback
+          setAlarms(prev => {
+            const active = prev.find(a => a.isEnabled) || prev[0];
+            if (active) {
+              setTimeout(() => {
+                ringingAlarmIdRef.current = active.id;
+                setRingingAlarm(active);
+              }, 100);
+              // Disable single-fire alarms
+              return prev.map(a => a.id === active.id && (!active.repeatDays || active.repeatDays.length === 0) ? { ...a, isEnabled: false } : a);
+            }
+            return prev;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to check native alarm", err);
+      }
+    };
+
+    // Check immediately on load
+    checkForNativeAlarmTrigger();
+
+    // Check every time the app comes to foreground (e.g., from the lockscreen/background)
+    const stateListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        checkForNativeAlarmTrigger();
+      }
+    });
+
+    return () => {
+      stateListener.then(l => l.remove());
+    };
+  }, []); // Run on mount
 
   // Main Alarm Checking Interval
   useEffect(() => {
@@ -70,13 +115,9 @@ function AppContent() {
   }, [alarms, ringingAlarm]);
 
   useEffect(() => {
-    const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap';
-    fontLink.rel = 'stylesheet';
-    document.head.appendChild(fontLink);
-
+    // Fonts loaded via index.html preconnect — just wait for them to be ready
     document.body.style.margin = '0';
-    document.fonts.ready.then(() => setTimeout(() => setIsReady(true), 500));
+    document.fonts.ready.then(() => setTimeout(() => setIsReady(true), 400));
   }, []);
 
   const navigate = (routeName: RouteName, params?: { id?: string }) => {
@@ -86,12 +127,27 @@ function AppContent() {
 
   if (!isReady) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: colors.backgroundDeep, color: colors.textPrimary, gap: '16px' }}>
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        height: '100vh',
+        background: `linear-gradient(160deg, ${colors.gradientStart} 0%, ${colors.gradientMid} 50%, ${colors.gradientEnd} 100%)`,
+        color: colors.textPrimary, gap: '20px',
+      }}>
+        {/* Ambient glow orb */}
         <div style={{
-          width: '60px', height: '60px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, #B040E0, #E040FB)',
-          boxShadow: '0 0 40px rgba(224, 64, 251, 0.3)',
+          position: 'absolute', top: '30%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '300px', height: '300px', borderRadius: '50%',
+          background: `radial-gradient(circle, ${colors.ambientGlow.replace('0.15', '0.3')} 0%, transparent 70%)`,
+          filter: 'blur(40px)', pointerEvents: 'none',
+        }} />
+        <div style={{
+          width: '64px', height: '64px', borderRadius: '50%',
+          background: `linear-gradient(135deg, ${colors.accentPrimary}, ${colors.accentPrimaryDim})`,
+          boxShadow: `0 0 48px ${colors.ambientGlow}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(16px)',
+          position: 'relative', zIndex: 1,
         }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="13" r="8" />
@@ -100,7 +156,7 @@ function AppContent() {
             <path d="M22 6l-3-3" />
           </svg>
         </div>
-        <h1 style={{ fontFamily: "'Outfit', sans-serif", fontSize: '28px', fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>WakeUp</h1>
+        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', fontWeight: 700, margin: 0, letterSpacing: '-0.02em', position: 'relative', zIndex: 1 }}>WakeUp</h1>
       </div>
     );
   }

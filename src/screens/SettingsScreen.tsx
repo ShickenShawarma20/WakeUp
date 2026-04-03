@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { GlassNavBar, type TabType } from '../components/GlassNavBar';
-import { GlassPanel } from '../components/GlassPanel';
+import { AtmosphericBackground } from '../components/AtmosphericBackground';
 import { useTheme } from '../theme/ThemeContext';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -11,7 +11,7 @@ interface SettingsScreenProps {
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) => {
-  const { colors } = useTheme();
+  const { colors, themePreference, setThemePreference } = useTheme();
 
   const [vibration, setVibration] = useState(true);
   const [volume, setVolume] = useState(80);
@@ -19,85 +19,74 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
   const [gradualVolume, setGradualVolume] = useState(true);
 
   return (
-    <div style={{
-      background: `linear-gradient(180deg, ${colors.backgroundElevated} 0%, ${colors.backgroundDeep} 100%)`,
-      minHeight: '100vh',
+    <AtmosphericBackground style={{
+      height: '100vh',
+      overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
     }}>
-      <style>
-        {`
-          .slider-purple {
-            -webkit-appearance: none;
-            width: 120px;
-            height: 6px;
-            background: rgba(180, 120, 255, 0.2);
-            border: none;
-            border-radius: 4px;
-            outline: none;
-          }
-          .slider-purple::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #B040E0, #E040FB);
-            box-shadow: 0 0 12px rgba(224, 64, 251, 0.3);
-            cursor: pointer;
-          }
-          .slider-purple::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #B040E0, #E040FB);
-            box-shadow: 0 0 12px rgba(224, 64, 251, 0.3);
-            cursor: pointer;
-            border: none;
-          }
-          .slider-purple::-webkit-slider-runnable-track {
-            background: linear-gradient(to right, #E040FB ${volume}%, rgba(180, 120, 255, 0.2) ${volume}%);
-            border-radius: 4px;
-            height: 6px;
-          }
-          .select-purple {
-            appearance: none;
-            background: rgba(30, 20, 60, 0.6);
-            border: 1px solid rgba(180, 120, 255, 0.15);
-            padding: 8px 32px 8px 12px;
-            border-radius: 12px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            color: ${colors.textPrimary};
-            outline: none;
-            cursor: pointer;
-            background-image: url('data:image/svg+xml;utf8,<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%239E8CC0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-          }
-        `}
-      </style>
+      <style>{`
+        /* Slider — circadian accent tinted */
+        .crisp-slider {
+          -webkit-appearance: none;
+          width: 130px;
+          height: 5px;
+          border-radius: 3px;
+          outline: none;
+          background: rgba(255,255,255,0.1);
+          border: none;
+        }
+        .crisp-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 20px; height: 20px;
+          border-radius: 50%;
+          cursor: pointer;
+          background: var(--accent-primary, #818cf8);
+          box-shadow: 0 0 12px var(--accent-glow, rgba(129,140,248,0.3));
+        }
+        .crisp-slider::-moz-range-thumb {
+          width: 20px; height: 20px;
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          background: var(--accent-primary, #818cf8);
+        }
+        /* Glass select */
+        .crisp-select {
+          appearance: none;
+          background: rgba(0,0,0,0.2);
+          backdrop-filter: blur(8px);
+          border: none;
+          padding: 8px 32px 8px 14px;
+          border-radius: 12px;
+          font-family: 'Manrope', sans-serif;
+          font-size: 0.875rem;
+          color: #e0e7ff;
+          outline: none;
+          cursor: pointer;
+          box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+          background-image: url('data:image/svg+xml;utf8,<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+        }
+      `}</style>
+      <style>{`
+        :root {
+          --accent-primary: ${colors.accentPrimary};
+          --accent-glow: ${colors.ambientGlow};
+        }
+      `}</style>
 
-      {/* Purple glow */}
-      <div style={{
-        position: 'absolute',
-        top: '-80px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '300px',
-        height: '300px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(176, 64, 224, 0.15) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
+      {/* ── Header ──────────────────────────────────────── */}
       <header style={{
         padding: `calc(env(safe-area-inset-top) + 40px) ${spacing.screenPadding}px 20px`,
         zIndex: 10,
       }}>
-        <h1 style={{ ...typography.heroTitle, color: colors.textPrimary, margin: 0 }}>Settings</h1>
+        <h1 style={{ ...typography.headlineMd, color: colors.textPrimary, margin: 0 }}>Settings</h1>
       </header>
 
+      {/* ── Content ──────────────────────────────────────── */}
       <main style={{
         flex: 1,
         overflowY: 'auto',
@@ -105,35 +94,60 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
         paddingBottom: '120px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px',
+        gap: `${spacing.groupGap}px`,
       }}>
+
+        {/* ── Display & Theme ──────────────────────────── */}
+        <SettingsSection title="Display & Theme" colors={colors}>
+          <SettingsRow label="App Theme" colors={colors}>
+            <select
+              className="crisp-select"
+              value={themePreference}
+              onChange={(e) => setThemePreference(e.target.value as any)}
+            >
+              <option value="auto">Auto (Circadian)</option>
+              <option value="day">Day (Aura)</option>
+              <option value="noon">Noon (Zenith)</option>
+              <option value="evening">Evening (Dusk)</option>
+              <option value="night">Night (Deep Orbit)</option>
+            </select>
+          </SettingsRow>
+        </SettingsSection>
+
+        {/* ── Sound & Vibration ────────────────────────── */}
         <SettingsSection title="Sound & Vibration" colors={colors}>
-          <SettingsRow label="Default Sound" colors={colors} control={
-            <select className="select-purple" defaultValue="Radar">
+          <SettingsRow label="Default Sound" colors={colors}>
+            <select className="crisp-select" defaultValue="Radar">
               <option value="Radar">Radar</option>
               <option value="Beacon">Beacon</option>
               <option value="Chimes">Chimes</option>
             </select>
-          } hasDivider />
-          <SettingsRow label="Vibration" colors={colors} control={
-            <Toggle enabled={vibration} onToggle={() => setVibration(!vibration)} />
-          } hasDivider />
-          <SettingsRow label="Volume" colors={colors} control={
+          </SettingsRow>
+
+          <div style={{ height: `${spacing.sp6}px` }} />
+
+          <SettingsRow label="Vibration" colors={colors}>
+            <ToggleSwitch enabled={vibration} onToggle={() => setVibration(!vibration)} colors={colors} />
+          </SettingsRow>
+
+          <div style={{ height: `${spacing.sp6}px` }} />
+
+          <SettingsRow label="Alarm Volume" colors={colors}>
             <input
               type="range"
-              min="0"
-              max="100"
+              min="0" max="100"
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              className="slider-purple"
+              className="crisp-slider"
             />
-          } />
+          </SettingsRow>
         </SettingsSection>
 
+        {/* ── Behavior ─────────────────────────────────── */}
         <SettingsSection title="Behavior" colors={colors}>
-          <SettingsRow label="Snooze Duration" colors={colors} control={
+          <SettingsRow label="Snooze Duration" colors={colors}>
             <select
-              className="select-purple"
+              className="crisp-select"
               value={snoozeDuration}
               onChange={(e) => setSnoozeDuration(e.target.value)}
             >
@@ -141,80 +155,87 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
               <option value="10">10 min</option>
               <option value="15">15 min</option>
             </select>
-          } hasDivider />
-          <SettingsRow label="Gradually Increase Volume" colors={colors} control={
-            <Toggle enabled={gradualVolume} onToggle={() => setGradualVolume(!gradualVolume)} />
-          } />
+          </SettingsRow>
+
+          <div style={{ height: `${spacing.sp6}px` }} />
+
+          <SettingsRow label="Gradually Increase Volume" colors={colors}>
+            <ToggleSwitch enabled={gradualVolume} onToggle={() => setGradualVolume(!gradualVolume)} colors={colors} />
+          </SettingsRow>
         </SettingsSection>
 
-        {/* About */}
+        {/* ── About ──────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          style={{ textAlign: 'center', marginTop: '16px' }}
+          transition={{ delay: 0.4 }}
+          style={{ textAlign: 'center', paddingTop: '8px' }}
         >
-          <p style={{ ...typography.labelText, color: colors.textMuted }}>
+          <p style={{ ...typography.labelMd, color: colors.textMuted }}>
             WakeUp Luxury v1.0
+          </p>
+          <p style={{ ...typography.labelSm, color: `${colors.textMuted}80`, marginTop: '4px' }}>
+            THE TEMPORAL PRISM DESIGN SYSTEM
           </p>
         </motion.div>
       </main>
 
       <GlassNavBar activeTab="settings" onTabPress={onTabPress} />
-    </div>
+    </AtmosphericBackground>
   );
 };
 
+// ── Settings Section ─────────────────────────────────────────
 const SettingsSection: React.FC<{ title: string; children: React.ReactNode; colors: any }> = ({ title, children, colors }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
     <h3 style={{
-      ...typography.labelText,
+      ...typography.labelSm,
       color: colors.textMuted,
       marginLeft: '4px',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.08em',
-      fontSize: '11px',
+      marginBottom: '8px',
     }}>
       {title}
     </h3>
-    <GlassPanel style={{
-      padding: '4px 20px',
-      background: 'rgba(20, 14, 40, 0.85)',
-      border: '1px solid rgba(180, 120, 255, 0.1)',
+    {/* Level 1 glass section panel */}
+    <div style={{
+      background: colors.surfaceContainerLow,
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      borderRadius: '24px',
+      boxShadow: `inset 0 1px 0 ${colors.glassHighlight}`,
+      padding: '20px 24px',
     }}>
       {children}
-    </GlassPanel>
+    </div>
   </div>
 );
 
-const SettingsRow: React.FC<{ label: string; control: React.ReactNode; hasDivider?: boolean; colors: any }> = ({ label, control, hasDivider = false, colors }) => (
-  <>
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '14px 0',
-    }}>
-      <span style={{ ...typography.bodyText, color: colors.textPrimary }}>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center' }}>{control}</div>
-    </div>
-    {hasDivider && <div style={{ height: '1px', backgroundColor: 'rgba(180, 120, 255, 0.08)', margin: '0 -20px' }} />}
-  </>
+// ── Settings Row ─────────────────────────────────────────────
+const SettingsRow: React.FC<{ label: string; children: React.ReactNode; colors: any }> = ({ label, children, colors }) => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  }}>
+    <span style={{ ...typography.bodyLg, color: colors.textPrimary }}>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'center' }}>{children}</div>
+  </div>
 );
 
-const Toggle: React.FC<{ enabled: boolean; onToggle: () => void }> = ({ enabled, onToggle }) => (
+// ── Toggle Switch ─────────────────────────────────────────────
+const ToggleSwitch: React.FC<{ enabled: boolean; onToggle: () => void; colors: any }> = ({ enabled, onToggle, colors }) => (
   <div
     onClick={onToggle}
     style={{
-      width: '52px',
-      height: '28px',
-      borderRadius: '14px',
-      position: 'relative',
-      cursor: 'pointer',
+      width: '52px', height: '28px',
+      borderRadius: '999px',
+      position: 'relative', cursor: 'pointer',
       background: enabled
-        ? 'linear-gradient(135deg, #B040E0, #E040FB)'
-        : 'rgba(100, 80, 140, 0.5)',
-      boxShadow: enabled ? '0 0 16px rgba(224, 64, 251, 0.3)' : 'none',
+        ? `linear-gradient(135deg, ${colors.accentPrimary}, ${colors.accentPrimaryDim})`
+        : 'rgba(0,0,0,0.3)',
+      boxShadow: enabled
+        ? `0 0 16px ${colors.ambientGlow}, inset 0 1px 0 rgba(255,255,255,0.2)`
+        : 'inset 0 2px 4px rgba(0,0,0,0.3)',
       transition: 'all 0.3s ease',
     }}
   >
@@ -222,13 +243,9 @@ const Toggle: React.FC<{ enabled: boolean; onToggle: () => void }> = ({ enabled,
       animate={{ left: enabled ? '26px' : '3px' }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       style={{
-        position: 'absolute',
-        top: '3px',
-        width: '22px',
-        height: '22px',
-        borderRadius: '50%',
-        backgroundColor: '#FFF',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        position: 'absolute', top: '3px',
+        width: '22px', height: '22px', borderRadius: '50%',
+        backgroundColor: '#FFF', boxShadow: '0 1px 6px rgba(0,0,0,0.25)',
       }}
     />
   </div>
