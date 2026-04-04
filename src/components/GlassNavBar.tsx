@@ -15,19 +15,19 @@ export const GlassNavBar: React.FC<GlassNavBarProps> = ({ activeTab, onTabPress 
   return (
     <div style={{
       position: 'fixed',
-      bottom: '28px',
+      bottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 12px)',
       left: '50%',
       transform: 'translateX(-50%)',
-      width: 'calc(100% - 64px)',
-      maxWidth: '320px',
-      minWidth: '220px',
-      height: '60px',
+      width: 'calc(100% - 48px)',
+      maxWidth: '340px',
+      minWidth: '240px',
+      height: '64px',
       // Nav glass — pill shape, ambient float
       ...glassStyles.navBar,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-around',
-      padding: '0 8px',
+      padding: '0 12px',
       zIndex: 1000,
     }}>
       {/* Alarms Tab */}

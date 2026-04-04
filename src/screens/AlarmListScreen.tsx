@@ -140,7 +140,7 @@ export const AlarmListScreen: React.FC<AlarmListScreenProps> = ({
           overflowY: 'auto',
           scrollBehavior: 'smooth',
           padding: `0 ${spacing.screenPadding}px`,
-          paddingBottom: '120px',
+          paddingBottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 100px)',
           display: 'flex',
           flexDirection: 'column',
           gap: `${spacing.sp3}px`,   // 12px between cards

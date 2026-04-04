@@ -191,8 +191,12 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
       zIndex: 9999,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center',
-      padding: '48px 24px 32px',
+      paddingTop: 'calc(env(safe-area-inset-top) + 32px)',
+      paddingLeft: '24px',
+      paddingRight: '24px',
+      paddingBottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 24px)',
       overflowY: 'auto',
+      boxSizing: 'border-box',
     }}>
         <motion.div
           animate={{ scale: [1, 1.02, 1], opacity: [1, 0.88, 1] }}

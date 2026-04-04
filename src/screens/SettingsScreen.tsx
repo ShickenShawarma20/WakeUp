@@ -113,7 +113,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
         flex: 1,
         overflowY: 'auto',
         padding: `0 ${spacing.screenPadding}px`,
-        paddingBottom: '120px',
+        paddingBottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 100px)',
         display: 'flex',
         flexDirection: 'column',
         gap: `${spacing.groupGap}px`,
