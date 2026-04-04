@@ -7,6 +7,7 @@ import { RingingScreen } from './screens/RingingScreen';
 import { ThemeProvider, useTheme } from './theme/ThemeContext';
 import { requestNotificationPermissions, syncAlarmsToNotifications } from './utils/notifications';
 import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import NativeAlarm from './utils/nativeAlarm';
 type RouteName = 'AlarmList' | 'AlarmDetail' | 'Settings';
 
@@ -44,6 +45,7 @@ function AppContent() {
     requestNotificationPermissions();
 
     const checkForNativeAlarmTrigger = async () => {
+      if (Capacitor.getPlatform() === 'web') return; // Prevents "NativeAlarm not implemented" spam
       try {
         const result = await NativeAlarm.checkAlarm();
         if (result.triggered) {

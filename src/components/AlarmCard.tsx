@@ -43,7 +43,7 @@ export const AlarmCard: React.FC<AlarmCardProps> = ({
       style={{
         // Level 2 Glass Card — No outer border, inner glow only
         ...glassStyles.standard,
-        padding: '20px 24px',
+        padding: '16px 20px',
         cursor: 'pointer',
         opacity: isEnabled ? 1 : 0.45,
         // Ambient glow when active — tinted, never pure black

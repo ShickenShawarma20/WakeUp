@@ -115,7 +115,6 @@ const NavButton: React.FC<NavButtonProps> = ({ id, isActive, onClick, accentColo
       flex: 1, height: '100%',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      gap: '4px',
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
@@ -129,10 +128,12 @@ const NavButton: React.FC<NavButtonProps> = ({ id, isActive, onClick, accentColo
     {/* Active indicator — glowing dot, no lines */}
     {isActive && (
       <motion.div
-        layoutId="nav-indicator"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0 }}
         style={{
           position: 'absolute',
-          bottom: '6px',
+          bottom: '8px',
           width: '5px', height: '5px',
           borderRadius: '50%',
           backgroundColor: accentColor,

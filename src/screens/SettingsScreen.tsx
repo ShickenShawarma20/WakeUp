@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GlassNavBar, type TabType } from '../components/GlassNavBar';
 import { AtmosphericBackground } from '../components/AtmosphericBackground';
@@ -13,10 +13,32 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) => {
   const { colors, themePreference, setThemePreference } = useTheme();
 
-  const [vibration, setVibration] = useState(true);
-  const [volume, setVolume] = useState(80);
-  const [snoozeDuration, setSnoozeDuration] = useState('10');
-  const [gradualVolume, setGradualVolume] = useState(true);
+  const [vibration, setVibration] = useState<boolean>(() => {
+    const saved = localStorage.getItem('settings-vibration');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [volume, setVolume] = useState<number>(() => {
+    const saved = localStorage.getItem('settings-volume');
+    return saved !== null ? Number(saved) : 80;
+  });
+  const [snoozeDuration, setSnoozeDuration] = useState(() => {
+    return localStorage.getItem('settings-snooze') || '10';
+  });
+  const [gradualVolume, setGradualVolume] = useState<boolean>(() => {
+    const saved = localStorage.getItem('settings-gradual');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [defaultSound, setDefaultSound] = useState(() => {
+    return localStorage.getItem('settings-sound') || 'Radar';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('settings-vibration', JSON.stringify(vibration));
+    localStorage.setItem('settings-volume', volume.toString());
+    localStorage.setItem('settings-snooze', snoozeDuration);
+    localStorage.setItem('settings-gradual', JSON.stringify(gradualVolume));
+    localStorage.setItem('settings-sound', defaultSound);
+  }, [vibration, volume, snoozeDuration, gradualVolume, defaultSound]);
 
   return (
     <AtmosphericBackground style={{
@@ -62,11 +84,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
           border-radius: 12px;
           font-family: 'Manrope', sans-serif;
           font-size: 0.875rem;
-          color: #e0e7ff;
+          color: ${colors.textPrimary};
           outline: none;
           cursor: pointer;
           box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
-          background-image: url('data:image/svg+xml;utf8,<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+          background-image: url('data:image/svg+xml;utf8,<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${encodeURIComponent(colors.textSecondary)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
           background-repeat: no-repeat;
           background-position: right 10px center;
         }
@@ -117,7 +139,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
         {/* ── Sound & Vibration ────────────────────────── */}
         <SettingsSection title="Sound & Vibration" colors={colors}>
           <SettingsRow label="Default Sound" colors={colors}>
-            <select className="crisp-select" defaultValue="Radar">
+            <select className="crisp-select" value={defaultSound} onChange={(e) => setDefaultSound(e.target.value)}>
               <option value="Radar">Radar</option>
               <option value="Beacon">Beacon</option>
               <option value="Chimes">Chimes</option>

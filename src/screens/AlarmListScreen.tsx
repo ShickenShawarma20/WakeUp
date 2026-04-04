@@ -34,17 +34,6 @@ export const AlarmListScreen: React.FC<AlarmListScreenProps> = ({
   alarms, nextAlarmText, onToggleAlarm, onPressAlarm, onTabPress,
 }) => {
   const { colors, atmosphericState } = useTheme();
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Format current time for asymmetric hero display
-  const dispHours = currentTime.getHours() % 12 || 12;
-  const dispMinutes = currentTime.getMinutes().toString().padStart(2, '0');
-  const dispAmPm = currentTime.getHours() >= 12 ? 'PM' : 'AM';
 
   // Greeting based on atmospheric state
   const greetingMap: Record<string, string> = {
@@ -84,24 +73,8 @@ export const AlarmListScreen: React.FC<AlarmListScreenProps> = ({
               }}>
                 {greeting}
               </p>
-              {/* Display-lg clock — left-aligned per asymmetric spec */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <h1 style={{
-                  ...typography.displayLg,
-                  color: colors.textPrimary,
-                  margin: 0,
-                  textShadow: `0 4px 32px ${colors.ambientGlow}`,
-                }}>
-                  {dispHours}:{dispMinutes}
-                </h1>
-                <span style={{
-                  ...typography.labelMd,
-                  color: colors.accentPrimary,
-                  marginBottom: '0.4rem',
-                }}>
-                  {dispAmPm}
-                </span>
-              </div>
+              {/* Display-lg clock — isolated to prevent full list re-renders */}
+              <HeroClock colors={colors} typography={typography} />
             </div>
 
             {/* Right: Atmospheric illustration */}
@@ -228,5 +201,38 @@ export const AlarmListScreen: React.FC<AlarmListScreenProps> = ({
         <GlassNavBar activeTab="alarms" onTabPress={onTabPress} />
     </AtmosphericBackground>
 
+  );
+};
+
+const HeroClock: React.FC<{ colors: any; typography: any }> = ({ colors, typography }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const dispHours = currentTime.getHours() % 12 || 12;
+  const dispMinutes = currentTime.getMinutes().toString().padStart(2, '0');
+  const dispAmPm = currentTime.getHours() >= 12 ? 'PM' : 'AM';
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+      <h1 style={{
+        ...typography.displayLg,
+        color: colors.textPrimary,
+        margin: 0,
+        textShadow: `0 4px 32px ${colors.ambientGlow}`,
+      }}>
+        {dispHours}:{dispMinutes}
+      </h1>
+      <span style={{
+        ...typography.labelMd,
+        color: colors.accentPrimary,
+        marginBottom: '0.4rem',
+      }}>
+        {dispAmPm}
+      </span>
+    </div>
   );
 };

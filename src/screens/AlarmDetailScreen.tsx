@@ -47,7 +47,7 @@ export const AlarmDetailScreen: React.FC<AlarmDetailScreenProps> = ({ isEditMode
     }}>
         {/* ── Top Bar ────────────────────────────────────── */}
         <div style={{
-          padding: `calc(env(safe-area-inset-top) + 20px) ${spacing.screenPadding}px 16px`,
+          padding: `calc(env(safe-area-inset-top) + 24px) 32px 16px`,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -99,36 +99,7 @@ export const AlarmDetailScreen: React.FC<AlarmDetailScreenProps> = ({ isEditMode
           </button>
         </div>
 
-        {/* ── Hero Time Display ──────────────────────────── */}
-        <div style={{
-          textAlign: 'center',
-          padding: '8px 0 32px',
-          zIndex: 10,
-          position: 'relative',
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'baseline',
-            gap: '10px',
-          }}>
-            <h2 style={{
-              ...typography.displayLg,
-              color: colors.textPrimary,
-              margin: 0,
-              textShadow: `0 4px 32px ${colors.ambientGlow}`,
-            }}>
-              {time.hours}:{time.minutes.toString().padStart(2, '0')}
-            </h2>
-            <span style={{
-              ...typography.labelMd,
-              color: colors.accentPrimary,
-              marginBottom: '0.5rem',
-            }}>
-              {time.ampm}
-            </span>
-          </div>
-        </div>
+        {/* Removed Redundant Hero Time Display */}
 
         {/* ── Bottom Sheet — Level 2 elevated glass ─────── */}
         <motion.div
@@ -137,7 +108,7 @@ export const AlarmDetailScreen: React.FC<AlarmDetailScreenProps> = ({ isEditMode
           transition={{ type: 'spring', damping: 22, stiffness: 120 }}
           style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
-            height: '58%', zIndex: 10,
+            height: '75%', zIndex: 10,
           }}
         >
           <div style={{
@@ -217,7 +188,7 @@ export const AlarmDetailScreen: React.FC<AlarmDetailScreenProps> = ({ isEditMode
               <span style={{ ...typography.labelMd, color: colors.textMuted, marginBottom: '12px', display: 'block' }}>
                 Repeat
               </span>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                 {DAYS_OF_WEEK.map((day) => (
                   <CircleSelector
                     key={day.id}
@@ -239,7 +210,7 @@ export const AlarmDetailScreen: React.FC<AlarmDetailScreenProps> = ({ isEditMode
             </div>
 
             {/* ── Actions ──────────────────────────────────── */}
-            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '20px' }}>
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '32px' }}>
               {isEditMode && onDelete && (
                 <button
                   id="detail-delete-btn"
