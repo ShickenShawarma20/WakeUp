@@ -210,7 +210,7 @@ export const AlarmDetailScreen: React.FC<AlarmDetailScreenProps> = ({ isEditMode
             </div>
 
             {/* ── Actions ──────────────────────────────────── */}
-            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 16px)' }}>
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: 'calc(max(env(safe-area-inset-bottom), 24px) + 32px)' }}>
               {isEditMode && onDelete && (
                 <button
                   id="detail-delete-btn"

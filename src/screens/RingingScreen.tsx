@@ -176,8 +176,17 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
   };
 
   const handleDismiss = () => {
+    // 1. Stop web audio/camera
     stopSound();
     stopCamera();
+    
+    // 2. Stop native alarm service (if on Android)
+    const isWeb = !window.hasOwnProperty('Capacitor') || (window as any).Capacitor.getPlatform() === 'web';
+    if (!isWeb) {
+      import('../utils/nativeAlarm').then(m => m.default.stopAlarm().catch(() => {}));
+    }
+
+    // 3. Trigger UI dismissal
     onDismiss();
   };
 
@@ -194,7 +203,7 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
       paddingTop: 'calc(env(safe-area-inset-top) + 32px)',
       paddingLeft: '24px',
       paddingRight: '24px',
-      paddingBottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 24px)',
+      paddingBottom: 'calc(max(env(safe-area-inset-bottom), 24px) + 64px)',
       overflowY: 'auto',
       boxSizing: 'border-box',
     }}>
@@ -219,7 +228,7 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ alarmLabel, onDism
         <div style={{
           width: '100%', maxWidth: '340px',
           background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: '24px', padding: '24px', textAlign: 'center', marginBottom: 'auto',
+          borderRadius: '24px', padding: '24px', textAlign: 'center', marginBottom: '24px',
           boxShadow: `inset 0 1px 0 ${colors.glassHighlight}`,
         }}>
           <p style={{ ...typography.labelMd, color: colors.textMuted, marginBottom: '12px' }}>

@@ -1,21 +1,27 @@
 import NativeAlarm from './nativeAlarm';
 import type { Alarm } from '../screens/AlarmListScreen';
+import { Capacitor } from '@capacitor/core';
 
 export const requestNotificationPermissions = async () => {
-  // If we still need to request basic permissions on newer Androids, we could do it here
-  // But for the native full screen alarm, the manifest permissions generally handle it.
+  if (Capacitor.getPlatform() === 'web') return;
+  try {
+    const result = await NativeAlarm.requestAlarmPermissions();
+    console.log('Permissions result:', result);
+    return result;
+  } catch (err) {
+    console.error('Failed to request native alarm permissions:', err);
+  }
 };
 
 export const syncAlarmsToNotifications = async (alarms: Alarm[]) => {
+  if (Capacitor.getPlatform() === 'web') return;
   try {
-    // 1. Clear currently scheduled native alarm
     await NativeAlarm.clear();
 
     const now = new Date();
     let nextAlarmTime: Date | null = null;
     let nextAlarmLabel = 'WakeUp Luxury';
 
-    // 2. Find the Absolute earliest upcoming alarm
     for (const alarm of alarms) {
       if (!alarm.isEnabled) continue;
 
@@ -35,7 +41,6 @@ export const syncAlarmsToNotifications = async (alarms: Alarm[]) => {
           let scheduleDate = new Date(now);
           scheduleDate.setHours(targetHours, alarm.time.minutes, 0, 0);
 
-          // Advanced by days until the day of week matches
           while (scheduleDate.getDay() !== jsDay || scheduleDate <= now) {
             scheduleDate.setDate(scheduleDate.getDate() + 1);
           }
@@ -60,7 +65,6 @@ export const syncAlarmsToNotifications = async (alarms: Alarm[]) => {
       }
     }
 
-    // 3. Schedule the single nearest alarm in the native OS
     if (nextAlarmTime) {
       await NativeAlarm.schedule({
         time: nextAlarmTime.getTime().toString(),
