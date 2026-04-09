@@ -39,9 +39,9 @@ Ever snoozed your alarm without realizing it? WakeUp forces you to get out of be
 ### Screenshots
 
 <div align="center">
-  <img src="https://placehold.co/300x600/121212/FFF?text=Home+Screen" width="200" alt="Home Screen" style="margin: 10px;" />
-  <img src="https://placehold.co/300x600/121212/FFF?text=Setting+Alarm" width="200" alt="Alarm Setting" style="margin: 10px;" />
-  <img src="https://placehold.co/300x600/121212/FFF?text=AI+Object+Detection" width="200" alt="AI Detection" style="margin: 10px;" />
+  <img src="docs/screenshots/home.png" width="200" alt="Home Screen" style="margin: 10px; border-radius: 20px;" />
+  <img src="docs/screenshots/add_alarm.png" width="200" alt="Alarm Setting" style="margin: 10px; border-radius: 20px;" />
+  <img src="docs/screenshots/settings.png" width="200" alt="Settings Screen" style="margin: 10px; border-radius: 20px;" />
 </div>
 
 ---
