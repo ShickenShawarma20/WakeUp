@@ -133,14 +133,7 @@ wakeup/
 
 ---
 
-## 🛡️ Security & Privacy Notice
 
-- **API Keys:** This repository is configured to block any `.env`, `.env.local`, or secret configuration files from being committed via `.gitignore`.
-- **Local AI Context:** TensorFlow.js operations are strictly on-device. No visual information or camera feed is uploaded.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
