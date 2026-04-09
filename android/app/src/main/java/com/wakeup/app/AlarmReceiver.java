@@ -1,4 +1,4 @@
-package com.wakeupluxury.app;
+package com.wakeup.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

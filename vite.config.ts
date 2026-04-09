@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'WakeUp Luxury',
+        name: 'WakeUp',
         short_name: 'WakeUp',
         description: 'A premium AI-powered alarm clock for a better morning.',
         theme_color: '#0D0B1A',

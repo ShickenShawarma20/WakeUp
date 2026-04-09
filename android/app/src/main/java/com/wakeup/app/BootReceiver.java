@@ -1,4 +1,4 @@
-package com.wakeupluxury.app;
+package com.wakeup.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,7 +16,7 @@ public class BootReceiver extends BroadcastReceiver {
         // Read the saved alarm time from SharedPreferences (saved by NativeAlarmPlugin)
         SharedPreferences prefs = context.getSharedPreferences("NativeAlarmPrefs", Context.MODE_PRIVATE);
         long alarmTime = prefs.getLong("alarm_time", -1);
-        String alarmLabel = prefs.getString("alarm_label", "WakeUp Luxury");
+        String alarmLabel = prefs.getString("alarm_label", "WakeUp");
 
         if (alarmTime > System.currentTimeMillis()) {
             NativeAlarmPlugin.scheduleAlarm(context, alarmTime, alarmLabel);

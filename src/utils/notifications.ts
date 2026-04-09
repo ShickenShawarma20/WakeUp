@@ -20,7 +20,7 @@ export const syncAlarmsToNotifications = async (alarms: Alarm[]) => {
 
     const now = new Date();
     let nextAlarmTime: Date | null = null;
-    let nextAlarmLabel = 'WakeUp Luxury';
+    let nextAlarmLabel = 'WakeUp';
 
     for (const alarm of alarms) {
       if (!alarm.isEnabled) continue;
@@ -47,7 +47,7 @@ export const syncAlarmsToNotifications = async (alarms: Alarm[]) => {
 
           if (!nextAlarmTime || scheduleDate < nextAlarmTime) {
             nextAlarmTime = scheduleDate;
-            nextAlarmLabel = alarm.label || 'WakeUp Luxury';
+            nextAlarmLabel = alarm.label || 'WakeUp';
           }
         }
       } else {
@@ -60,7 +60,7 @@ export const syncAlarmsToNotifications = async (alarms: Alarm[]) => {
 
         if (!nextAlarmTime || scheduleDate < nextAlarmTime) {
           nextAlarmTime = scheduleDate;
-          nextAlarmLabel = alarm.label || 'WakeUp Luxury';
+          nextAlarmLabel = alarm.label || 'WakeUp';
         }
       }
     }

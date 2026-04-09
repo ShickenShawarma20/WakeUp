@@ -1,4 +1,4 @@
-package com.wakeupluxury.app;
+package com.wakeup.app;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -27,7 +27,7 @@ public class AlarmService extends Service {
 
     public static final String CHANNEL_ID   = "alarm_ring_channel";
     public static final int    NOTIF_ID     = 999;
-    public static final String ACTION_STOP  = "com.wakeupluxury.app.STOP_ALARM";
+    public static final String ACTION_STOP  = "com.wakeup.app.STOP_ALARM";
     public static final String EXTRA_LABEL  = "alarm_label";
 
     private MediaPlayer    mediaPlayer;
@@ -44,13 +44,13 @@ public class AlarmService extends Service {
         }
 
         String label = (intent != null) ? intent.getStringExtra(EXTRA_LABEL) : null;
-        if (label == null || label.isEmpty()) label = "WakeUp Luxury";
+        if (label == null || label.isEmpty()) label = "WakeUp";
 
         // ── Wake lock so the CPU stays alive ──────────────────────────
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "WakeUpLuxury::AlarmWakeLock"
+            "WakeUp::AlarmWakeLock"
         );
         wakeLock.acquire(10 * 60 * 1000L); // max 10 min
 
@@ -192,7 +192,7 @@ public class AlarmService extends Service {
                 "Alarm Ringing",
                 NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Critical alerts for WakeUp Luxury");
+            channel.setDescription("Critical alerts for WakeUp");
             channel.setBypassDnd(true);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

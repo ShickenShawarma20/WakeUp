@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">WakeUp Luxury</string>
-    <string name="title_activity_main">WakeUp Luxury</string>
-    <string name="package_name">com.wakeupluxury.app</string>
-    <string name="custom_url_scheme">com.wakeupluxury.app</string>
+    <string name="app_name">WakeUp</string>
+    <string name="title_activity_main">WakeUp</string>
+    <string name="package_name">com.wakeup.app</string>
+    <string name="custom_url_scheme">com.wakeup.app</string>
 </resources>

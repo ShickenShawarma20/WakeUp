@@ -1,4 +1,4 @@
-package com.wakeupluxury.app;
+package com.wakeup.app;
 
 import android.Manifest;
 import android.app.AlarmManager;
@@ -57,7 +57,7 @@ public class NativeAlarmPlugin extends Plugin {
     @PluginMethod
     public void schedule(PluginCall call) {
         String timeString = call.getString("time");
-        String label = call.getString("label", "WakeUp Luxury");
+        String label = call.getString("label", "WakeUp");
 
         if (timeString == null) {
             call.reject("Must provide time");

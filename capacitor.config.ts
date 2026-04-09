@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.wakeupluxury.app',
-  appName: 'WakeUp Luxury',
+  appId: 'com.wakeup.app',
+  appName: 'WakeUp',
   webDir: 'dist'
 };
 

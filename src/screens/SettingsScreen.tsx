@@ -194,7 +194,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onTabPress }) =>
           style={{ textAlign: 'center', paddingTop: '8px' }}
         >
           <p style={{ ...typography.labelMd, color: colors.textMuted }}>
-            WakeUp Luxury v1.0
+            WakeUp v1.0
           </p>
           <p style={{ ...typography.labelSm, color: `${colors.textMuted}80`, marginTop: '4px' }}>
             THE TEMPORAL PRISM DESIGN SYSTEM

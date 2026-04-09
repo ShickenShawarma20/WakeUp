@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.wakeupluxury.app"
-    compileSdk = rootProject.ext.compileSdkVersion
+    namespace = "com.wakeup.app"
+    compileSdk = 35
     defaultConfig {
-        applicationId "com.wakeupluxury.app"
+        applicationId "com.wakeup.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
